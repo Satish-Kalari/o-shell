@@ -16,8 +16,8 @@ VALIDATE(){
 }
 
 # Update the system
-dnf update &>> $LOGFILE
-VALIDATE $? "Update dnf"
+# dnf update &>> $LOGFILE
+# VALIDATE $? "Update dnf"
 
 # Install PostgreSQL
 dnf install -y postgresql15.x86_64 postgresql15-server &>> $LOGFILE

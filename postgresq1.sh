@@ -1,28 +1,51 @@
 #!/bin/bash
+R="\e[31m"
+G="\e[32m"
+Y="\e[33m"
+N="\e[0m"
+
+VALIDATE(){
+
+    if [ $1 -ne 0 ] #l$1 takes valuve from $? VALIDATE command from line 43  
+    then
+        echo -e "$2 ... $R FAILLED $N" #-e enables $ functions in this case color coding
+        exit 1
+    else 
+        echo -e "$2 ...$G SUCESSFUL $N " # &=both success and failure >>=appending, >= overwite content 
+    fi
+}
 
 # Update the system
-sudo dnf update
+dnf update &>> $LOGFILE
+VALIDATE $? "Update dnf"
 
 # Install PostgreSQL
-sudo dnf install -y postgresql15.x86_64 postgresql15-server
+dnf install -y postgresql15.x86_64 postgresql15-server &>> $LOGFILE
+VALIDATE $? "Install postgresql"
 
 # Initialize the database
-sudo postgresql-setup --initdb
+postgresql-setup --initdb &>> $LOGFILE
+VALIDATE $? "postgresql setup"
 
 # Start the PostgreSQL service
-sudo systemctl start postgresql
+systemctl start postgresql &>> $LOGFILE
+VALIDATE $? "postgresql start"
 
 # Enable the PostgreSQL service to start on boot
-sudo systemctl enable postgresql
+systemctl enable postgresql &>> $LOGFILE
+VALIDATE $? "postgresql enabled"
 
 # Check the status of the PostgreSQL service
-sudo systemctl status postgresql
+systemctl status postgresql &>> $LOGFILE
+VALIDATE $? "postgresql status"
 
 # Take a backup of the postgresql.conf file
-sudo cp /var/lib/pgsql/data/postgresql.conf /var/lib/pgsql/data/postgresql.conf.bak
+cp /var/lib/pgsql/data/postgresql.conf /var/lib/pgsql/data/postgresql.conf.bak &>> $LOGFILE
+VALIDATE $? "postgresql start"
 
 # Modify the postgresql.conf file to accept connections from anywhere
-sudo sed -i 's/#listen_addresses = 'localhost'/listen_addresses = '\''\*'\''/' /var/lib/pgsql/data/postgresql.conf
+sed -i 's/#listen_addresses = 'localhost'/listen_addresses = '\''\*'\''/' /var/lib/pgsql/data/postgresql.conf &>> $LOGFILE
+VALIDATE $? "postgresql remote acess"
 
 # Change the password of the postgres user
 echo "postgres" | sudo passwd --stdin postgres
@@ -38,7 +61,8 @@ exit
 EOF
 
 # Modify the pg_hba.conf file to allow remote connections
-sudo sed -i 's/#host all all 127.0.0.1\/32 ident host all all 0.0.0.0\/0 md5/host all all 0.0.0.0\/0 md5/' /var/lib/pgsql/data/pg_hba.conf
+sed -i 's/#host all all 127.0.0.1\/32 ident host all all 0.0.0.0\/0 md5/host all all 0.0.0.0\/0 md5/' /var/lib/pgsql/data/pg_hba.conf
 
 # Restart the PostgreSQL service
-sudo systemctl restart postgresql
+systemctl restart postgresql &>> $LOGFILE
+VALIDATE $? "postgresql restart"

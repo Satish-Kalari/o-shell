@@ -1,8 +1,12 @@
 #!/bin/bash
+
 R="\e[31m"
 G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
+
+TIMESTAMP=$(date +%F-%H-%M-%S)
+LOGFILE="/tmp/$0-$TIMESTAMP.log"
 
 VALIDATE(){
 
@@ -16,8 +20,8 @@ VALIDATE(){
 }
 
 # Update the system
-# dnf update &>> $LOGFILE
-# VALIDATE $? "Update dnf"
+dnf update &>> $LOGFILE
+VALIDATE $? "Update dnf"
 
 # Install PostgreSQL
 dnf install -y postgresql15.x86_64 postgresql15-server &>> $LOGFILE
